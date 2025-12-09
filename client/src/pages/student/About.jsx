@@ -69,17 +69,6 @@ const About = () => {
         </div>
       </section>
 
-
-      {/* CTA Section */}
-      <section className="text-center py-16 bg-cyan-600 text-white mt-20">
-        <h2 className="text-3xl font-bold mb-3">Start Your Learning Journey 🚀</h2>
-        <p className="max-w-xl mx-auto mb-6">
-          Unlock unlimited access to premium courses, mentorship and certification.
-        </p>
-        <button className="bg-white text-cyan-700 font-semibold px-8 py-3 rounded-lg hover:bg-cyan-50 transition-all">
-          Explore Courses
-        </button>
-      </section>
     </div>
            <Footer/>
     </>
