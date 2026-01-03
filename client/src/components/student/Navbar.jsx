@@ -54,7 +54,6 @@ const Navbar = () => {
         <div className='flex items-center  text-[16px] font-semibold  gap-6'>
           <Link to="/" className={navHover}>Home</Link>
           <Link to="/course-list" className={navHover}>Courses</Link>
-          <Link to="/notice" className={navHover}>Notice</Link>
           <Link to="/about" className={navHover}>About</Link>
           <Link to="/contact" className={navHover}>Contact Us</Link>
         </div>
