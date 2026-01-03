@@ -1,106 +1,133 @@
-import React from 'react'
-import { assets } from '../../assets/assets'
-import SearchBar from './SearchBar'
+import React from 'react';
+// import { assets } from '../../assets/assets'; 
 
-// const Hero = () => {
-//   return (
-//     // <div className='flex flex-col items-center justify-center w-full md:pt-36 pt-20 px-7 md:px-0 space-y-7 text-center bg-gradient-to-b from-cyan-100/70' >
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/pagination';
 
-//     //   <h1 className='md:text-home-heading-large text-home-heading-small relative font-bold text-gray-800 max-w-3xl mx-auto'>
-//     //     Empower your future with the courses designed to <span className='text-blue-600'>fit your choice.</span><img src={assets.sketch} alt="sketch" className='md:block hidden absolute -bottom-7 right-0'/>
-//     //   </h1>
-
-//     //   <p className='md:block hidden text-gray-500 max-w-2xl mx-auto'>
-//     //     We bring together world class instructors, interactive content, and a spportive community to help you achive your personal and professional goals
-//     //   </p>
-
-//     //   <p className='md:hidden text-gray-500 max-w-sm mx-auto'>
-//     //     We bring together world-c;ass instructors to help you achive your personal and professional goals
-//     //   </p>
-//     //   <SearchBar/>
-//     // </div>
-    
-
-// <div id="default-carousel" className="relative w-full" data-carousel="slide">
-//     <div className="relative h-56 overflow-hidden rounded-base md:h-96">
-//         <div className="hidden duration-700 ease-in-out" data-carousel-item>
-//             <img src={assets.course_1_thumbnail} className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="..."/>
-//         </div>
-//         <div className="hidden duration-700 ease-in-out" data-carousel-item>
-//             <img src={assets.course_2_thumbnail} className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="..."/>
-//         </div>
-//         <div className="hidden duration-700 ease-in-out" data-carousel-item>
-//             <img src={assets.course_3_thumbnail} className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="..."/>
-//         </div>
-//         <div className="hidden duration-700 ease-in-out" data-carousel-item>
-//             <img src={assets.course_4_thumbnail} className="absolute block w-full -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" alt="..."/>
-//         </div>
-//     </div>
-//     <div className="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-//         <button type="button" className="w-3 h-3 rounded-base" aria-current="true" aria-label="Slide 1" data-carousel-slide-to="0"></button>
-//         <button type="button" className="w-3 h-3 rounded-base" aria-current="false" aria-label="Slide 2" data-carousel-slide-to="1"></button>
-//         <button type="button" className="w-3 h-3 rounded-base" aria-current="false" aria-label="Slide 3" data-carousel-slide-to="2"></button>
-//         <button type="button" className="w-3 h-3 rounded-base" aria-current="false" aria-label="Slide 4" data-carousel-slide-to="3"></button>
-//         <button type="button" className="w-3 h-3 rounded-base" aria-current="false" aria-label="Slide 5" data-carousel-slide-to="4"></button>
-//     </div>
-//     <button type="button" className="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-prev>
-//         <span className="inline-flex items-center justify-center w-10 h-10 rounded-base bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-//             <svg className="w-5 h-5 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19-7-7 7-7"/></svg>
-//             <span className="sr-only">Previous</span>
-//         </span>
-//     </button>
-//     <button type="button" className="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none" data-carousel-next>
-//         <span className="inline-flex items-center justify-center w-10 h-10 rounded-base bg-white/30 dark:bg-gray-800/30 group-hover:bg-white/50 dark:group-hover:bg-gray-800/60 group-focus:ring-4 group-focus:ring-white dark:group-focus:ring-gray-800/70 group-focus:outline-none">
-//             <svg className="w-5 h-5 text-white rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m9 5 7 7-7 7"/></svg>
-//             <span className="sr-only">Next</span>
-//         </span>
-//     </button>
-// </div>
-
-//   )
-// }
-
-// export default Hero
-
-
-import { useEffect } from "react";
-import { Carousel } from "flowbite";
-
-const images = [
-  assets.course_1_thumbnail,
-  assets.course_2_thumbnail,
-  assets.course_3_thumbnail,
-  assets.course_4_thumbnail
-];
-
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/pagination";
+import { Autoplay, Pagination } from 'swiper/modules';
 
 const Hero = () => {
+  const heroSlides = [
+    {
+      id: 1,
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop",
+      // Split title into normal text and highlighted text
+      title: "Full Stack",
+      highlight: "Web Development",
+      subtitle: "Learn MERN stack from scratch with real-world projects.",
+      price: "$49",
+      originalPrice: "$199",
+      discount: "75% OFF"
+    },
+    {
+      id: 2,
+      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
+      title: "Data Science",
+      highlight: "Bootcamp",
+      subtitle: "Master Python, Pandas, and Machine Learning algorithms.",
+      price: "$59",
+      originalPrice: "$249",
+      discount: "70% OFF"
+    },
+    {
+      id: 3,
+      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?q=80&w=2000&auto=format&fit=crop",
+      title: "UI/UX Design",
+      highlight: "Masterclass",
+      subtitle: "Design beautiful mobile apps and websites using Figma.",
+      price: "$39",
+      originalPrice: "$149",
+      discount: "60% OFF"
+    },
+    {
+      id: 4,
+      image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop",
+      title: "Digital Marketing",
+      highlight: "Pro",
+      subtitle: "Grow any business with SEO, SEM, and Social Media strategies.",
+      price: "$29",
+      originalPrice: "$99",
+      discount: "50% OFF"
+    }
+  ];
+
   return (
-    <div className="w-4/5 mx-auto mt-10"> {/* Top space + centered */}
-      <Swiper
-        modules={[Autoplay, Pagination]}
-        autoplay={{ delay: 3000 }}
-        pagination={{ clickable: true }}
-        loop={true}
-        className="rounded-xl overflow-hidden"
-        style={{ width: "100%" }}
-      >
-        {images.map((img, index) => (
-          <SwiperSlide key={index}>
-            <img
-              src={img}
-              className="w-full h-auto object-cover rounded-xl"
-            />
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className="w-full flex flex-col items-center justify-center pt-20 md:pt-16 pb-0 bg-gradient-to-b from-cyan-100/70 to-white px-4 md:px-0">
+      
+      <div className="w-[90%] mx-auto"> 
+        
+        <Swiper
+          modules={[Autoplay, Pagination]} 
+          spaceBetween={30}
+          centeredSlides={true}
+          loop={true}
+          autoplay={{
+            delay: 4000,
+            disableOnInteraction: false,
+          }}
+          pagination={{
+            clickable: true,
+            dynamicBullets: true,
+          }}
+          className="rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+        >
+          {heroSlides.map((slide) => (
+            <SwiperSlide key={slide.id} className="h-full">
+              
+              <div className="flex flex-col md:flex-row h-full">
+                
+                {/* Left Side (Green Background) */}
+                <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center items-start space-y-5 text-left order-2 md:order-1 bg-green-50">
+                  
+                  {/* === UPDATED HEADING === */}
+                  <h1 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
+                    {slide.title} <span className="text-blue-600">{slide.highlight}</span>
+                  </h1>
+                  
+                  <p className="text-gray-600 text-base md:text-lg">
+                    {slide.subtitle}
+                  </p>
+
+                  <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-500 uppercase tracking-wide">Total Price</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-bold text-gray-900">{slide.price}</span>
+                        <span className="text-lg text-gray-400 line-through decoration-red-500">{slide.originalPrice}</span>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full">
+                      {slide.discount}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 w-full pt-4">
+                    <button className="flex-1 md:flex-none px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
+                      Enroll Now
+                    </button>
+                    <button className="flex-1 md:flex-none px-8 py-3 border border-gray-400 text-gray-700 font-semibold rounded-lg hover:bg-white transition duration-300">
+                      View Demo
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right Side Image */}
+                <div className="relative w-full h-64 md:h-auto md:w-1/2 order-1 md:order-2 overflow-hidden">
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
+                </div>
+
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
     </div>
   );
 };
 
 export default Hero;
-
