@@ -21,25 +21,8 @@ const Navbar = () => {
     "hover:text-blue-600 transition relative after:content-[''] after:absolute after:left-0 after:bottom-[-3px] after:w-0 after:h-[2px] after:bg-blue-600 after:transition-all after:duration-300 hover:after:w-full"
 
   return (
-    <div className={`flex items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-5 ${isCourseListPage ? "bg-white" : "bg-cyan-100/70"}`}>
-      
-      {/* --- Desktop Logo --- */}
-      <img
-  onClick={() => navigate("/")}
-  src={assets.logo_new}
-  alt="logo"
-  className="
-    w-36 lg:w-40 
-    cursor-pointer 
-    transition 
-    duration-300 
-    hover:scale-105 
-    hover:drop-shadow-md
-  "
-/>
-
-
-      {/* --- Desktop Menu --- */}
+    <div className={`flex items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 border-b border-gray-500 py-4 ${isCourseListPage ? "bg-white":"bg-cyan-100/70"}`}>
+      <img onClick={()=> navigate("/")} src={assets.logo_new} alt="logo" className='w-35 lg:w-40 cursor-pointer' />
       <div className='hidden md:flex items-center gap-5 text-gray-500'>
         <div className='flex items-center gap-5'>
           {user && 
