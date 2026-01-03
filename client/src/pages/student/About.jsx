@@ -9,7 +9,7 @@ const About = () => {
       {/* 2. THE GRADIENT LAYER (Exactly 200px height) */}
       <div className="absolute top-0 left-0 w-full h-[200px] bg-gradient-to-b from-cyan-100/70 to-white z-0" />
 
-      {/* 3. Main Content (z-10 ensures it sits ON TOP of the gradient) */}
+      {/* 3. Main Content */}
       <div className="relative z-10 pt-20 md:pt-4 pb-0 px-4 md:px-0">
         
         <div className="pb-10">
@@ -96,6 +96,9 @@ const About = () => {
               ))}
             </div>
           </section>
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 };
