@@ -96,24 +96,6 @@ const About = () => {
               ))}
             </div>
           </section>
-
-          {/* --- CTA Section --- */}
-          <section className="px-6 mt-16 mb-10">
-            <div className="max-w-5xl mx-auto bg-gradient-to-r from-cyan-600 to-blue-600 rounded-3xl p-12 text-center text-white shadow-2xl">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Start Your Learning Journey 🚀</h2>
-              <p className="max-w-xl mx-auto mb-8 text-cyan-50 text-lg">
-                Unlock unlimited access to premium courses, mentorship, and certification. 
-                Join the community today.
-              </p>
-              <button className="bg-white text-cyan-700 font-bold px-10 py-4 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
-                Explore Courses
-              </button>
-            </div>
-          </section>
-
-        </div>
-        <Footer />
-      </div>
     </div>
   );
 };

@@ -7,11 +7,9 @@ import humanizeDuration from 'humanize-duration'
 import Footer from '../../components/student/Footer'
 import Youtube from "react-youtube"
 
-
 const CourseDetails = () => {
 
   const { id } = useParams()
-
   const [courseData, setCourseData] = useState(null)
   const [openSections, setOpenSections] = useState({})
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false)
@@ -20,7 +18,7 @@ const CourseDetails = () => {
   // New State to manage Normal vs Premium selection
   const [isPremium, setIsPremium] = useState(false)
 
-  const { allCourses, calculateRating, calculateChapterTime, calculateCourseDuration,
+const { allCourses, calculateRating, calculateChapterTime, calculateCourseDuration,
     calculateNoOfLectures, currency } = useContext(AppContext)
 
   const fetchCourseData = async () => {
@@ -51,9 +49,7 @@ const CourseDetails = () => {
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 pt-20 text-left">
 
-        <div className="absolute top-0 left-0 w-full h-section-height -z-1 bg-gradient-to-b from-cyan-100/70"></div>
-
-       
+        <div className="absolute top-0 left-0 w-full h-section-height -z-1 bg-gradient-to-b from-cyan-100/70"></div>       
 
         {/* --- RIGHT COLUMN (Using State) --- */}
         <div className='max-w-course-card z-10 shadow-custom-card rounded-t md:rounded-none overflow-hidden bg-white min-w-[300px] sm:min-w-[420px]'>
@@ -145,7 +141,6 @@ const CourseDetails = () => {
                 )}
               </ul>
             </div>
-            
           </div>
         </div>
 
@@ -207,6 +202,7 @@ const CourseDetails = () => {
           <div className='py-20 text-sm md:text-default'>
             <h3 className='text-xl font-semibold text-gray-800'>Course Description</h3>
             <p className='pt-3 rich-text' dangerouslySetInnerHTML={{ __html: courseData.courseDescription }}></p>
+
           </div>
         </div>
       </div>
