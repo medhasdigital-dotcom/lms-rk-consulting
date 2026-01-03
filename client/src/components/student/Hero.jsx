@@ -55,7 +55,7 @@ const Hero = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center pt-20 md:pt-16 pb-0 bg-gradient-to-b from-cyan-100/70 to-white px-4 md:px-0">
       
-      <div className="w-[90%] mx-auto"> 
+      <div className="w-[80%] mx-auto"> 
         
         <Swiper
           modules={[Autoplay, Pagination]} 

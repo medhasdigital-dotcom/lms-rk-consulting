@@ -16,6 +16,7 @@
     "flowbite": "^4.0.1",
     "flowbite-react": "^0.12.13",
     "humanize-duration": "^3.32.1",
+    "lucide-react": "^0.561.0",
     "quill": "^2.0.3",
     "rc-progress": "^4.0.0",
     "react": "^19.0.0",
