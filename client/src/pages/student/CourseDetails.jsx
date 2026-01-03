@@ -14,11 +14,11 @@ const CourseDetails = () => {
   const [openSections, setOpenSections] = useState({})
   const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false)
   const [playerData, setPlayerData] = useState(null)
+  
+  // New State to manage Normal vs Premium selection
+  const [isPremium, setIsPremium] = useState(false)
 
-  // NEW: Selected plan state
-  const [planType, setPlanType] = useState("basic")
-
-  const { allCourses, calculateRating, calculateChapterTime, calculateCourseDuration,
+const { allCourses, calculateRating, calculateChapterTime, calculateCourseDuration,
     calculateNoOfLectures, currency } = useContext(AppContext)
 
   const fetchCourseData = async () => {
@@ -36,34 +36,130 @@ const CourseDetails = () => {
     ))
   }
 
-  // Pricing Based on Plan
-  const basicPrice = courseData?.coursePrice || 0
-  const premiumPrice = basicPrice + 10 // Customize or fetch dynamic premium value
+  // Calculate Prices
+  const normalPrice = courseData ? (courseData.coursePrice - courseData.discount * courseData.coursePrice / 100) : 0;
+  // Example: Premium is 25% more expensive (You can adjust this logic)
+  const premiumPrice = normalPrice * 1.25; 
+  
+  // Determine which price to show based on state
+  const displayPrice = isPremium ? premiumPrice : normalPrice;
 
-  const selectedPrice = planType === "basic" ? basicPrice : premiumPrice
-  const finalPrice = (selectedPrice - (courseData?.discount * selectedPrice / 100)).toFixed(2)
 
   return courseData ? (
     <>
       <div className="flex md:flex-row flex-col-reverse gap-10 relative items-start justify-between md:px-36 px-8 pt-20 text-left">
 
-        <div className="absolute top-0 left-0 w-full h-section-height -z-1 bg-gradient-to-b from-cyan-100/70"></div>
+        <div className="absolute top-0 left-0 w-full h-section-height -z-1 bg-gradient-to-b from-cyan-100/70"></div>       
 
-        {/* LEFT SIDE CONTENT (unchanged) */}
+        {/* --- RIGHT COLUMN (Using State) --- */}
+        <div className='max-w-course-card z-10 shadow-custom-card rounded-t md:rounded-none overflow-hidden bg-white min-w-[300px] sm:min-w-[420px]'>
+
+          {
+            playerData ? <Youtube videoId={playerData.videoId} opts={{ playerVars: { autoplay: 1 } }} iframeClassName='w-full aspect-video' />
+              : <img src={courseData.courseThumbnail} alt="" />
+          }
+
+          <div className='p-5'>
+            
+            {/* 1. Toggle Switch UI */}
+            <div className='flex items-center gap-4 mb-4 bg-gray-100 p-1 rounded-lg'>
+                <button 
+                  onClick={() => setIsPremium(false)}
+                  className={`w-1/2 py-2 rounded-md text-sm font-medium transition-all ${!isPremium ? 'bg-white shadow text-black' : 'text-gray-500'}`}
+                >
+                  Normal
+                </button>
+                <button 
+                  onClick={() => setIsPremium(true)}
+                  className={`w-1/2 py-2 rounded-md text-sm font-medium transition-all ${isPremium ? 'bg-blue-600 shadow text-white' : 'text-gray-500'}`}
+                >
+                  Premium
+                </button>
+            </div>
+
+            <div className='flex items-center gap-2'>
+              <img className='w-3.5' src={assets.time_left_clock_icon} alt="left clock" />
+              <p className='text-red-500'>
+                <span className='font-medium'>5 days</span> left at this price!
+              </p>
+            </div>
+
+            {/* 2. Dynamic Price Section */}
+            <div className='flex items-center gap-3 pt-2'>
+              <p className='text-gray-800 md:text-4xl text-2xl font-semibold'>
+                {currency}{displayPrice.toFixed(2)}
+              </p>
+              {/* Only show discount strikethrough for Normal plan for clarity, or calculate a fake original for Premium */}
+              <p className='md:text-lg text-gray-500 line-through'>
+                {currency}{(isPremium ? courseData.coursePrice * 1.25 : courseData.coursePrice).toFixed(2)}
+              </p>
+              <p className='md:text-lg text-gray-500'>{courseData.discount}% off</p>
+            </div>
+
+            <div className='flex items-center text-sm md:text-default gap-4 pt-2 md:pt-4 text-gray-500'>
+              <div className='flex items-center gap-1'>
+                <img src={assets.star} alt="star icon" />
+                <p>{calculateRating(courseData)}</p>
+              </div>
+              <div className='h-4 w-px bg-gray-500/40'></div>
+              <div className='flex items-center gap-1'>
+                <img src={assets.time_clock_icon} alt="" />
+                <p>{calculateCourseDuration(courseData)}</p>
+              </div>
+              <div className='h-4 w-px bg-gray-500/40'></div>
+              <div className='flex items-center gap-1'>
+                <img src={assets.lesson_icon} alt="" />
+                <p>{calculateNoOfLectures(courseData)} lessons</p>
+              </div>
+            </div>
+
+            {/* 3. Action Button (Dynamic Text) */}
+            <button className={`md:mt-6 mt-4 w-full py-3 rounded text-white font-medium transition-colors ${isPremium ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 hover:bg-gray-900'}`}>
+              {isAlreadyEnrolled ? "Already Enrolled" : (isPremium ? "Enroll Premium" : "Enroll Now")}
+            </button>
+
+            {/* 4. Dynamic Description Features */}
+            <div className='pt-6'>
+              <p className='md:text-xl text-lg font-medium text-gray-800'>
+                {isPremium ? "Premium Features" : "What's in the course?"}
+              </p>
+              
+              <ul className='ml-4 pt-2 text-sm md:text-default list-disc text-gray-500'>
+                <li>Lifetime access with free updates</li>
+                <li>Step-by-step, hands-on project guidance</li>
+                <li>Downloadable resources with source files</li>
+                <li>Quizzes to test your knowledge</li>
+                <li>Certification of completion</li>
+                
+                {/* Conditionally render Premium Extras */}
+                {isPremium && (
+                  <>
+                     <li className='font-semibold text-blue-600'>1-on-1 Mentorship Session</li>
+                     <li className='font-semibold text-blue-600'>Priority Doubt Solving</li>
+                     <li className='font-semibold text-blue-600'>Resume Review & Job Support</li>
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+         {/* left column */}
         <div className='max-w-xl z-10 text-gray-500'>
           <h1 className='md:text-course-details-heading-large text-course-details-heading-small font-semibold text-gray-800'>{courseData.courseTitle}</h1>
           <p className='pt-4 md:text-base text-sm' dangerouslySetInnerHTML={{ __html: courseData.courseDescription.slice(0, 200) }}></p>
 
+          {/*review and rating */}
           <div className='flex items-center space-x-2 pt-3 pb-1 text-sm'>
             <p>{calculateRating(courseData)}</p>
             <div className='flex'>
               {[...Array(5)].map((_, i) => (<img key={i} src={i < Math.floor(calculateRating(courseData)) ? assets.star : assets.star_blank} alt='' className='w-3.5 h-3.5' />))}
             </div>
-            <p className='text-blue-600'>({courseData.courseRatings.length} ratings)</p>
-            <p>{courseData.enrolledStudents.length} students</p>
-          </div>
+            <p className='text-blue-600'>({courseData.courseRatings.length}{courseData.courseRatings.length > 1 ? "ratings" : "rating"})</p>
 
-          <p className='text-sm'>Course by <span className='text-blue-600 underline'>Elon Musk</span></p>
+            <p>{courseData.enrolledStudents.length}{courseData.enrolledStudents.length > 1 ? "students" : "student"}</p>
+          </div>
+          <p className='text-sm'>Course by <span className='text-blue-600 underline'>ElonMusk</span></p>
 
           <div className='pt-8 text-gray-800'>
             <h2 className='text-xl font-semibold'>Course Structure</h2>
@@ -87,9 +183,11 @@ const CourseDetails = () => {
                           <div className='flex items-center justify-between w-full text-gray-800 text-xs md:text-default'>
                             <p>{lecture.lectureTitle}</p>
                             <div className='flex gap-2'>
-                              {lecture.isPreviewFree && (
-                                <p onClick={() => setPlayerData({ videoId: lecture.lectureUrl.split("/").pop() })} className='text-blue-500 cursor-pointer'>Preview</p>
-                              )}
+                              {lecture.isPreviewFree && <p
+                                onClick={() => setPlayerData({
+                                  videoId: lecture.lectureUrl.split("/").pop()
+                                })}
+                                className='text-blue-500 cursor-pointer'>Preview</p>}
                               <p>{humanizeDuration(lecture.lectureDuration * 60 * 1000, { units: ["h", "m"] })}</p>
                             </div>
                           </div>
@@ -101,97 +199,10 @@ const CourseDetails = () => {
               ))}
             </div>
           </div>
-
           <div className='py-20 text-sm md:text-default'>
             <h3 className='text-xl font-semibold text-gray-800'>Course Description</h3>
             <p className='pt-3 rich-text' dangerouslySetInnerHTML={{ __html: courseData.courseDescription }}></p>
-          </div>
-        </div>
 
-        {/* ---------- RIGHT SIDE UPDATED: Subscription Card ---------- */}
-        <div className='max-w-course-card z-10 shadow-custom-card rounded overflow-hidden bg-white min-w-[300px] sm:min-w-[420px]'>
-
-          {playerData ?
-            <Youtube videoId={playerData.videoId} opts={{ playerVars: { autoplay: 1 } }} iframeClassName='w-full aspect-video' />
-            :
-            <img src={courseData.courseThumbnail} alt="" />
-          }
-
-          <div className='p-5'>
-
-            {/* SUBSCRIPTION TOGGLE TABS */}
-            <div className="flex w-full">
-              {["basic", "premium"].map(type => (
-                <button
-                  key={type}
-                  onClick={() => setPlanType(type)}
-                  className={`flex-1 py-2 font-semibold text-center 
-                    ${planType === type ? "bg-blue-200 text-black" : "bg-gray-100 text-gray-700"}`}>
-                  {type.toUpperCase()}
-                </button>
-              ))}
-            </div>
-
-            <div className='flex items-center gap-2 mt-4'>
-              <img className='w-3.5' src={assets.time_left_clock_icon} alt="left clock" />
-              <p className='text-red-500'><span className='font-medium'>5 days</span> left at this price!</p>
-            </div>
-
-            {/* PRICE SECTION */}
-            <div className='flex items-center gap-3 pt-2'>
-              <p className='text-gray-800 md:text-4xl text-2xl font-semibold'>{currency}{finalPrice}</p>
-              <p className='md:text-lg text-gray-500 line-through'>{currency}{selectedPrice}</p>
-              <p className='md:text-lg text-gray-500'>{courseData.discount}% off</p>
-            </div>
-
-            {/* Course Stats */}
-            <div className='flex items-center text-sm md:text-default gap-4 pt-3 text-gray-500'>
-              <div className='flex items-center gap-1'>
-                <img src={assets.star} alt="star icon" />
-                <p>{calculateRating(courseData)}</p>
-              </div>
-
-              <div className='h-4 w-px bg-gray-500/40'></div>
-
-              <div className='flex items-center gap-1'>
-                <img src={assets.time_clock_icon} alt="" />
-                <p>{calculateCourseDuration(courseData)}</p>
-              </div>
-
-              <div className='h-4 w-px bg-gray-500/40'></div>
-
-              <div className='flex items-center gap-1'>
-                <img src={assets.lesson_icon} alt="" />
-                <p>{calculateNoOfLectures(courseData)} lessons</p>
-              </div>
-            </div>
-
-
-
-            {/* Plan Features */}
-            <div className='pt-6'>
-              <p className='md:text-xl font-medium text-gray-800'>What's included:</p>
-
-              <ul className='ml-4 pt-2 text-sm list-disc text-gray-500'>
-                <li>Lifetime access with free updates</li>
-                <li>Step-by-step project guidance</li>
-                <li>Downloadable resources</li>
-                <li>Quizzes & assignments</li>
-                <li>Certificate on completion</li>
-
-                {/* PREMIUM EXTRA FEATURES */}
-                {planType === "premium" && (
-                  <>
-                    <li>Premium exclusive lessons</li>
-                    <li>Private mentor support</li>
-                  </>
-                )}
-              </ul>
-            </div>
-            {/* ENROLL BUTTON */}
-            <button className='md:mt-6 mt-4 w-full py-3 rounded bg-blue-600 text-white font-medium'>
-              {isAlreadyEnrolled ? "Already Enrolled" : `Enroll in ${planType.toUpperCase()}`}
-            </button>
           </div>
         </div>
       </div>
