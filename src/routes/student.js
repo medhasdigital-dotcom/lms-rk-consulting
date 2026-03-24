@@ -9,6 +9,7 @@ const enrollmentCtrl = require('../controllers/enrollmentController');
 const feedbackCtrl = require('../controllers/feedbackController');
 const videoCtrl = require('../controllers/videoController');
 const noteCtrl = require('../controllers/noteController');
+const userCtrl = require('../controllers/userController');
 
 // ── Public Routes ───────────────────────────────────────────────────────────
 
@@ -22,6 +23,7 @@ router.get('/course/:courseId/feedback', asyncHandler(feedbackCtrl.getCourseFeed
 router.get('/user/data', requireAuth, attachUser, asyncHandler(studentCtrl.getUserData));
 router.get('/user/enrolled-courses', requireAuth, attachUser, asyncHandler(studentCtrl.getEnrolledCourses));
 router.post('/user/get-course-progress', requireAuth, attachUser, asyncHandler(studentCtrl.getCourseProgress));
+router.post('/user/complete-profile', requireAuth, attachUser, asyncHandler(userCtrl.completeProfile));
 
 // ── Ratings & Feedback ──────────────────────────────────────────────────────
 
