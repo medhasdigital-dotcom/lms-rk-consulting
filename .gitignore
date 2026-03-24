@@ -175,3 +175,4 @@ appendonly.aof
 venv/
 env/
 ENV/
+node_modules
