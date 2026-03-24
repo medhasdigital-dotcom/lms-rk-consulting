@@ -12,7 +12,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.22.10",
     "@hello-pangea/dnd": "^18.0.1",
-    "axios": "^1.8.1",
+    "axios": "^1.13.6",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-react": "^8.6.0",
     "hls.js": "^1.6.15",
