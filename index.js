@@ -6,7 +6,7 @@ const morgan = require('morgan');
 const connectDB = require('./src/config/db');
 const errorHandler = require('./src/middleware/errorHandler');
 const logger = require('./src/utils/logger');
-
+const job = require("./src/services/cronJobs");
 // Routes
 const webhookRoutes = require('./src/routes/webhooks');
 const adminRoutes = require('./src/routes/admin');
@@ -18,6 +18,7 @@ const testimonialRoutes = require('./src/routes/testimonials');
 
 // Initialize
 const app = express();
+if (process.env.NODE_ENV === "production") job.start();
 connectDB();
 
 // ── Security & Logging ──────────────────────────────────────────────────────
@@ -60,4 +61,7 @@ app.use(errorHandler);
 
 // ── Start Server ────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => logger.info('SERVER', `Running on port ${PORT}`));
+app.listen(PORT, () => {
+  logger.info('SERVER', `Running on port ${PORT}`);
+});
+
