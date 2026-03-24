@@ -1,0 +1,179 @@
+import React, { useState } from "react";
+import { useSignIn } from "@clerk/clerk-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+import { assets } from "../../assets/assets";
+
+const ResetPasswordPage = () => {
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const navigate = useNavigate();
+
+  const [step, setStep] = useState(1); // 1: Email, 2: Code + New Password
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Send the reset code to the user's email
+  const handleSendCode = async (e) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setError("");
+    setLoading(true);
+
+    try {
+      await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: email,
+      });
+      setStep(2);
+    } catch (err) {
+      setError(
+        err.errors?.[0]?.longMessage ||
+        err.errors?.[0]?.message ||
+        "Failed to send verification code. Check if the email is correct."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Verify code and set new password
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code,
+        password: newPassword,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        navigate("/");
+      } else {
+        setError("Password reset incomplete. Please try again.");
+      }
+    } catch (err) {
+      setError(
+        err.errors?.[0]?.longMessage ||
+        err.errors?.[0]?.message ||
+        "Failed to reset password. Please check your code and new password."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-8">
+        <div className="text-center mb-8">
+          <Link to="/">
+            <img src={assets.logo} alt="Logo" className="w-32 mx-auto mb-6" />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Reset Password
+          </h1>
+          <p className="text-gray-500 text-sm">
+            {step === 1
+              ? "Enter your email to receive a password reset code."
+              : "Enter the code sent to your email and your new password."}
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl">
+            <p className="text-sm text-red-600 font-medium">{error}</p>
+          </div>
+        )}
+
+        {step === 1 ? (
+          <form onSubmit={handleSendCode} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-sm bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Code"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleResetPassword} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Verification Code
+              </label>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="6-digit code"
+                required
+                maxLength={6}
+                className="w-full px-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm bg-gray-50 focus:bg-white text-center text-xl tracking-[0.5em] font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                New Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Min 8 characters"
+                  required
+                  minLength={8}
+                  className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition text-sm bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading || code.length < 6 || newPassword.length < 8}
+              className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Reset Password"}
+            </button>
+          </form>
+        )}
+
+        <div className="mt-8 text-center">
+          <Link to="/sign-in" className="text-gray-500 text-sm hover:text-gray-700 font-medium">
+            Back to Sign In
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ResetPasswordPage;

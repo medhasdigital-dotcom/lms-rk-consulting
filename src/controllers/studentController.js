@@ -1,0 +1,238 @@
+const Course = require('../models/Course');
+const Section = require('../models/Section');
+const Lecture = require('../models/Lecture');
+const Enrollment = require('../models/Enrollment');
+const User = require('../models/User');
+const Progress = require('../models/Progress');
+const AnalyticsEvent = require('../models/AnalyticsEvent');
+
+/**
+ * Assemble course content (sections + lectures) for student-facing views.
+ * @param {string} courseId
+ * @returns {Promise<Array>}
+ */
+const getCourseContent = async (courseId) => {
+  const sections = await Section.find({ courseId })
+    .select('title order')
+    .sort({ order: 1 })
+    .lean();
+
+  return Promise.all(
+    sections.map(async (section) => {
+      const lectures = await Lecture.find({ sectionId: section._id })
+        .select('title order isFreePreview videoId')
+        .populate('videoId', 'duration status')
+        .sort({ order: 1 })
+        .lean();
+
+      return {
+        chapterTitle: section.title,
+        chapterContent: lectures.map((l) => ({
+          lectureId: l._id,
+          lectureTitle: l.title,
+          lectureDuration: l.videoId?.duration || 0,
+          isFreePreview: l.isFreePreview || false,
+        })),
+      };
+    })
+  );
+};
+
+/** GET /course/all — Public course catalog. */
+const getAllCourses = async (req, res) => {
+  const courses = await Course.find({ status: 'published' })
+    .select('title slug subtitle thumbnail category level currency pricingTiers averageRating totalReviews enrollmentCount instructorId createdAt')
+    .populate('instructorId', 'firstName lastName')
+    .lean();
+
+  const formattedCourses = courses.map((course) => {
+    const standardTier = course.pricingTiers?.find((t) => t.tier === 'standard' && t.isActive);
+    const premiumTier = course.pricingTiers?.find((t) => t.tier === 'premium' && t.isActive);
+
+    return {
+      _id: course._id,
+      title: course.title,
+      subtitle: course.subtitle,
+      thumbnail: course.thumbnail,
+      category: course.category,
+      level: course.level,
+      currency: course.currency?.toUpperCase(),
+      createdAt: course.createdAt,
+      pricingTiers: course.pricingTiers,
+      price: {
+        standard: standardTier?.finalPrice ?? null,
+        premium: premiumTier?.finalPrice ?? null,
+      },
+      rating: course.averageRating || 0,
+      totalReviews: course.totalReviews || 0,
+      enrollmentCount: course.enrollmentCount || 0,
+      instructor: {
+        name: `${course.instructorId?.firstName || ''} ${course.instructorId?.lastName || ''}`.trim(),
+      },
+      instructorId: course.instructorId,
+    };
+  });
+
+  res.json({ success: true, courses: formattedCourses });
+};
+
+/** GET /course/:id — Single course details (public). */
+const getCourseById = async (req, res) => {
+  const course = await Course.findById(req.params.id)
+    .select('title subtitle description thumbnail category level currency pricingTiers averageRating totalReviews enrollmentCount instructorId createdAt')
+    .populate('instructorId', 'firstName lastName')
+    .lean();
+
+  if (!course) return res.status(404).json({ success: false, message: 'Course not found' });
+
+  const courseContent = await getCourseContent(course._id);
+
+  res.json({
+    success: true,
+    course: {
+      _id: course._id,
+      title: course.title,
+      subtitle: course.subtitle,
+      description: course.description,
+      thumbnail: course.thumbnail,
+      category: course.category,
+      level: course.level,
+      currency: course.currency?.toUpperCase(),
+      createdAt: course.createdAt,
+      pricingTiers: course.pricingTiers,
+      enrollmentCount: course.enrollmentCount || 0,
+      averageRating: course.averageRating || 0,
+      totalReviews: course.totalReviews || 0,
+      instructorId: course.instructorId,
+      courseContent,
+      courseRatings: [],
+    },
+  });
+};
+
+/** GET /user/data — Authenticated user profile + enrollments. */
+const getUserData = async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  const enrollments = await Enrollment.find({
+    userId: req.user._id,
+    'purchase.status': 'CAPTURED',
+  }).lean();
+
+  const enrolledCourses = enrollments.map((e) => e.courseId.toString());
+  const premiumCourses = enrollments
+    .filter((e) => e.tier === 'PREMIUM')
+    .map((e) => e.courseId.toString());
+  
+  console.log(user,enrolledCourses,premiumCourses);
+
+  res.json({
+    success: true,
+    user: { ...user.toObject(), enrolledCourses, premiumCourses },
+  });
+};
+
+/** GET /user/enrolled-courses — List user's enrolled courses with content. */
+const getEnrolledCourses = async (req, res) => {
+  const enrollments = await Enrollment.find({
+    userId: req.user._id,
+    'purchase.status': 'CAPTURED',
+  })
+    .populate({
+      path: 'courseId',
+      select: 'title subtitle thumbnail category level averageRating totalReviews instructorId',
+      populate: { path: 'instructorId', select: 'firstName lastName' },
+    })
+    .lean();
+
+  const enrolledCourses = await Promise.all(
+    enrollments.map(async (enrollment) => {
+      const course = enrollment.courseId;
+      const content = await getCourseContent(course._id);
+
+      return {
+        _id: course._id,
+        title: course.title,
+        courseTitle: course.title,
+        subtitle: course.subtitle,
+        thumbnail: course.thumbnail,
+        courseThumbnail: course.thumbnail,
+        category: course.category,
+        level: course.level,
+        averageRating: course.averageRating || 0,
+        totalReviews: course.totalReviews || 0,
+        instructorId: course.instructorId,
+        courseContent: content,
+        purchaseTier: enrollment.tier,
+        userRating: enrollment.courseRating || 0,
+        progress: 0,
+      };
+    })
+  );
+
+  res.json({ success: true, enrolledCourses });
+};
+
+/** GET /course/:courseId/free-previews — Public free preview lectures. */
+const getFreePreviews = async (req, res) => {
+  const { courseId } = req.params;
+
+  const lectures = await Lecture.find({ courseId, isFreePreview: true })
+    .populate('videoId')
+    .populate('sectionId', 'title')
+    .sort({ order: 1 })
+    .lean();
+
+  const readyLectures = lectures
+    .filter((l) => l.videoId && l.videoId.status === 'READY')
+    .map((l) => ({
+      lectureId: l._id,
+      title: l.title,
+      sectionTitle: l.sectionId?.title,
+      duration: l.videoId?.duration || 0,
+      thumbnailUrl: l.videoId?.thumbnailFileName
+        ? `https://${process.env.BUNNY_CDN_HOSTNAME}/${l.videoId.videoGuid}/thumbnail.jpg`
+        : null,
+      order: l.order,
+    }));
+
+  res.json({ success: true, courseId, previews: readyLectures, count: readyLectures.length });
+};
+
+/** POST /user/get-course-progress — Get completed lectures for a course. */
+const getCourseProgress = async (req, res) => {
+  const { courseId } = req.body;
+  const userId = String(req.user._id);
+
+  if (!courseId) return res.status(400).json({ success: false, message: 'Course ID is required' });
+
+  const enrollment = await Enrollment.findOne({ userId, courseId, 'purchase.status': 'CAPTURED' });
+  if (!enrollment) return res.status(403).json({ success: false, message: 'You are not enrolled in this course' });
+
+  const progressDoc = await Progress.findOne({ userId, courseId }).select('lectureCompleted').lean();
+  let lectureCompleted = (progressDoc?.lectureCompleted || []).map((id) => String(id));
+
+  // Backward compat: use analytics events if dedicated progress doc empty
+  if (!lectureCompleted.length) {
+    const completedEvents = await AnalyticsEvent.find({
+      userId,
+      eventType: 'LECTURE_COMPLETED',
+      'payload.courseId': courseId,
+    }).lean();
+    lectureCompleted = [...new Set(completedEvents.map((e) => String(e.payload.lectureId)))];
+  }
+
+  res.json({
+    success: true,
+    progressData: { lectureCompleted, totalCompleted: lectureCompleted.length },
+  });
+};
+
+module.exports = {
+  getAllCourses,
+  getCourseById,
+  getUserData,
+  getEnrolledCourses,
+  getFreePreviews,
+  getCourseProgress,
+};
