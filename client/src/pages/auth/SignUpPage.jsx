@@ -20,11 +20,9 @@ const EDUCATION_OPTIONS = [
 ];
 
 const GENDER_OPTIONS = [
-  { value: "", label: "Select" },
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
   { value: "other", label: "Other" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
 // ── Input component helper ────────────────────────────────────────────────
@@ -32,7 +30,9 @@ const InputField = ({ icon: Icon, label, children }) => (
   <div>
     <label className="block text-sm font-semibold text-gray-700 mb-2">{label}</label>
     <div className="relative">
-      {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />}
+      {Icon && (
+        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none z-10" />
+      )}
       {children}
     </div>
   </div>
@@ -92,6 +92,20 @@ const SignUpPage = () => {
   const [education, setEducation] = useState("");
   const [gender, setGender] = useState("");
 
+  // ── Helper: wait for a valid Clerk token (retries up to 5x) ──────────────
+  const waitForToken = async () => {
+    let token = null;
+    let attempts = 0;
+    while (!token && attempts < 5) {
+      token = await getToken();
+      if (!token) {
+        await new Promise((res) => setTimeout(res, 800));
+        attempts++;
+      }
+    }
+    return token;
+  };
+
   // ── Step 1: Create Clerk account ──────────────────────────────────────────
   const handleStep1 = async (e) => {
     e.preventDefault();
@@ -107,7 +121,6 @@ const SignUpPage = () => {
         password,
       });
 
-      // Send email verification
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep(2);
     } catch (err) {
@@ -132,7 +145,9 @@ const SignUpPage = () => {
       const result = await signUp.attemptEmailAddressVerification({ code: otp });
 
       if (result.status === "complete") {
+        // FIX: Set session active first, then wait for Clerk to fully propagate
         await setActive({ session: result.createdSessionId });
+        await new Promise((res) => setTimeout(res, 1000)); // wait 1s for session to settle
         setStep(3);
       } else {
         setError("Verification incomplete. Please try again.");
@@ -155,12 +170,21 @@ const SignUpPage = () => {
     setLoading(true);
 
     try {
-      const token = await getToken();
+      // FIX: Retry getting token until Clerk session is fully ready
+      const token = await waitForToken();
+
+      if (!token) {
+        setError("Session not ready. Please wait a moment and try again.");
+        setLoading(false);
+        return;
+      }
+
       await axios.post(
         `${backendUrl}/api/user/complete-profile`,
         { phone, dateOfBirth: dob || null, education, gender },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save profile");
@@ -169,11 +193,7 @@ const SignUpPage = () => {
     }
   };
 
-  const handleSkipProfile = () => {
-    navigate("/");
-  };
-
-
+  const handleSkipProfile = () => navigate("/");
 
   return (
     <div className="min-h-screen bg-white flex">
@@ -417,9 +437,10 @@ const SignUpPage = () => {
                 </InputField>
 
                 {/* Gender */}
-                <InputField icon={Users} label="Gender">
-                  <div className="flex gap-2 pl-0">
-                    {GENDER_OPTIONS.filter((g) => g.value).map((opt) => (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+                  <div className="flex gap-2">
+                    {GENDER_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
@@ -434,7 +455,7 @@ const SignUpPage = () => {
                       </button>
                     ))}
                   </div>
-                </InputField>
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <button

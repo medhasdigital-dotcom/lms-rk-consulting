@@ -97,6 +97,9 @@ export const AppContextProvider = ({ children }) => {
         fetchUserData();
         fetchUserEnrolledCourses();
       } else {
+        setIsEducator(false);
+        setUserData(null);
+        setEnrolledCourses([]);
         setIsEducatorLoading(false);
       }
     }

@@ -15,9 +15,13 @@ const mediaRoutes = require('./src/routes/media');
 const progressRoutes = require('./src/routes/progress');
 const studentRoutes = require('./src/routes/student');
 const testimonialRoutes = require('./src/routes/testimonials');
+const clerkMiddleware = require('@clerk/clerk-sdk-node');
 
 // Initialize
 const app = express();
+
+app.use(clerkMiddleware.ClerkExpressWithAuth());
+
 if (process.env.NODE_ENV === "production") job.start();
 connectDB();
 
